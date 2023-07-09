@@ -28,11 +28,36 @@ router.post('/post', async (req, res) => {
 
 //ok now you get the gist of it, time to play around, just copy/paste the sample json data and play with it later
 
-//Get all Method
+//date formatter from 2023-07-05T00:00:00.000Z to 2023-July-05
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+    return formattedDate;
+}
+
+//Login page - show credentials for user_id 2, add dummy data to MONGO db for user_id 2
+//Why add user_id 2? to let visitors explore your app, and to not let guests interfere with your actual weight progression
+
+//Get all Method, weekly, monthly, yearly filter too
 router.get('/getAll', async(req, res) => {
     try{
         const data = await Model.find();
-        res.json(data);
+        const formattedData = [];
+
+        data.forEach((x) => {
+            let z = {};
+            z.date = formatDate(x.date);
+            z.name = formatDate(x.date);
+            z.weight =  x.weight;
+            z.uv = x.weight;
+            formattedData.push(z);
+          });
+
+        res.json(formattedData);
     }catch (error) {
         res.status(400).json({message: error.message});
     }
