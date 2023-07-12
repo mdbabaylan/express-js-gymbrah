@@ -1,11 +1,14 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const argon2 = require('argon2');
 
 const router = express.Router()
 
 module.exports = router;
 
 const Model = require('../model/model');
-
+const UserModel = require('../model/users');
+const secretKey = "secretKey";
 
 //async - await as usual
 
@@ -15,6 +18,22 @@ router.post('/post', async (req, res) => {
         date: req.body.date,
         user_id: req.body.user_id,
         weight: req.body.weight
+    });
+
+    try {
+        const dataToSave = await data.save();
+        res.status(200).json(dataToSave)
+    }
+    catch (error) {
+        res.status(400).json({message: error.message})
+    }
+})
+
+//Save a user in MongoDB, target a different collection though (users)
+router.post('/save-user', async (req, res) => {
+    const data = new UserModel({
+        user_id: req.body.user_id,
+        password: await argon2.hash(req.body.password) //argon2 hash more secure says gpt3
     });
 
     try {
@@ -63,22 +82,34 @@ router.get('/getAll', async(req, res) => {
     }
 })
 
-//Get by ID Method
-router.get('/getOne/:id', async (req, res) => {
-    try{
-        const data = await Model.findById(req.params.id);
-        res.json(data)
-    }
-    catch(error){
-        res.status(500).json({message: error.message})
-    }
-})
 
-//Get by ID Method
-router.get('/getOne/:id', (req, res) => {
-    //res.send('Get by ID API')
-    res.send(`Get by ID ${req.params.id}`)
-})
+//Issue JWT Token when login success
+router.get('/login/:user_id', async (req, res) => {
+    try {
+      const user_id = req.params.user_id;
+      const user = await UserModel.findOne({ user_id });
+
+      try {
+        if (await argon2.verify(user.password, "deez nuts")) {
+          // password match
+          res.status(200).json({ message: 'Match' });
+          //add JWT logic here
+
+          //return Token here
+        } else {
+          // password did not match
+          res.status(500).json({ message: 'Wrong user_id/password' });
+        }
+      } catch (err) {
+        // internal failure
+        res.status(500).json({ message: err.message });
+      }
+
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: 'An error occurred' });
+    }
+  });
 
 //Update by ID Method
 router.patch('/update/:id', (req, res) => {
