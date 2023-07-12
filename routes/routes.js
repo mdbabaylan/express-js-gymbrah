@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const argon2 = require('argon2');
+require('dotenv').config();
 
 const router = express.Router()
 
@@ -8,7 +9,7 @@ module.exports = router;
 
 const Model = require('../model/model');
 const UserModel = require('../model/users');
-const secretKey = "secretKey";
+const secretKey = process.env.SECRET_KEY;
 
 //async - await as usual
 
@@ -84,25 +85,29 @@ router.get('/getAll', async(req, res) => {
 
 
 //Issue JWT Token when login success
-router.get('/login/:user_id', async (req, res) => {
+router.post('/login', async (req, res) => {
     try {
-      const user_id = req.params.user_id;
+      const user_id = req.body.user_id;
+
+      //get user data
       const user = await UserModel.findOne({ user_id });
 
       try {
-        if (await argon2.verify(user.password, "deez nuts")) {
+        if (await argon2.verify(user.password, req.body.password)) { //check if encrypted password matches with string password
           // password match
-          res.status(200).json({ message: 'Match' });
-          //add JWT logic here
 
-          //return Token here
+          const token = jwt.sign({ user_id: user_id }, secretKey, { expiresIn: '2h' });
+
+         //return Token here, save in localStorage in frontend for authentication, also extract the user_id value here
+          res.json({ token });
         } else {
           // password did not match
-          res.status(500).json({ message: 'Wrong user_id/password' });
+          //res.status(500).json({ message: 'Wrong user_id/password' });
+          res.json({ message: "Wrong user_id/password" });
         }
       } catch (err) {
         // internal failure
-        res.status(500).json({ message: err.message });
+        res.json({ message: err.message });
       }
 
       res.json(user);
