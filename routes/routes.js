@@ -63,9 +63,10 @@ const formatDate = (dateString) => {
 //Why add user_id 2? to let visitors explore your app, and to not let guests interfere with your actual weight progression
 
 //Get all Method, weekly, monthly, yearly filter too
-router.get('/getAll', async(req, res) => {
+router.get('/getAll/:id', async(req, res) => {
     try{
-        const data = await Model.find();
+        const data = await Model.find({user_id: req.params.id});
+        //const data = await Model.find();
         const formattedData = [];
 
         data.forEach((x) => {
@@ -102,15 +103,13 @@ router.post('/login', async (req, res) => {
           res.json({ token });
         } else {
           // password did not match
-          //res.status(500).json({ message: 'Wrong user_id/password' });
-          res.json({ message: "Wrong user_id/password" });
+          res.status(500).json({ message: 'Wrong user_id/password' });
+          //res.json({ message: "Wrong user_id/password" });
         }
       } catch (err) {
         // internal failure
-        res.json({ message: err.message });
+        res.status(500).json({ message: err.message });
       }
-
-      res.json(user);
     } catch (error) {
       res.status(500).json({ message: 'An error occurred' });
     }
