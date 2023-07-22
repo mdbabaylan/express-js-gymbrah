@@ -22,7 +22,7 @@ app.use('/api', routes);
 
 
 //const mongoString = process.env.DATABASE_URL;
-const mongoString = "mongodb+srv://mdbabaylan:1ukfdubstep@clustermark.y48yiog.mongodb.net";
+const mongoString = ""; //paste mongoDB string here
 
 //connect to DB
 mongoose.connect(mongoString);
