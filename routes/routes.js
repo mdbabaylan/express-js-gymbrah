@@ -11,6 +11,9 @@ const Model = require('../model/model');
 const UserModel = require('../model/users');
 const secretKey = process.env.SECRET_KEY;
 
+//argon2 encryption replacement due to Linux AWS EB deployment issue
+var bcrypt = require('bcryptjs');
+var salt = bcrypt.genSaltSync(10);
 //async - await as usual
 
 //Post with model
@@ -34,7 +37,7 @@ router.post('/post', async (req, res) => {
 router.post('/save-user', async (req, res) => {
     const data = new UserModel({
         user_id: req.body.user_id,
-        password: await argon2.hash(req.body.password) //argon2 hash more secure says gpt3
+        password: await bcrypt.hashSync(req.body.password, salt)
     });
 
     try {
@@ -94,7 +97,9 @@ router.post('/login', async (req, res) => {
       const user = await UserModel.findOne({ user_id });
 
       try {
-        if (await argon2.verify(user.password, req.body.password)) { //check if encrypted password matches with string password
+        //havent tested creating new user and login after changing to encrypt, atleast you have done it despite being busy
+        if (bcrypt.compareSync(req.body.password, user.password)) {
+        //if (await argon2.verify(user.password, req.body.password)) { //check if encrypted password matches with string password
           // password match
 
           const token = jwt.sign({ user_id: user_id }, secretKey, { expiresIn: '2h' });

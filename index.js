@@ -14,14 +14,15 @@ app.use(corsMiddleware);
 
 app.use(express.json());
 
-app.listen(3000, () => {
-    console.log(`Server Started at ${3000}`)
+app.listen(8080, () => {
+    console.log(`Server Started at ${8080}`)
 })
 const routes = require('./routes/routes');
 app.use('/api', routes);
 
 
-const mongoString = process.env.DATABASE_URL;
+//const mongoString = process.env.DATABASE_URL;
+const mongoString = "mongodb+srv://mdbabaylan:1ukfdubstep@clustermark.y48yiog.mongodb.net";
 
 //connect to DB
 mongoose.connect(mongoString);
