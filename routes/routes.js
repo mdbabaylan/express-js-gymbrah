@@ -1,6 +1,5 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const argon2 = require('argon2');
 require('dotenv').config();
 
 const router = express.Router()
